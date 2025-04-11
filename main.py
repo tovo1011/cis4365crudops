@@ -35,27 +35,40 @@ def addOneCustomer():
 @app.route("/api/Customer/updateEmail", methods = ["PUT"])
 def updateCustomer():
     requestdata = request.get_json()
-    customerID = requestdata["id"]
+    custid = requestdata["customer_id"]
+
     newEmail = requestdata["email"]
     
-    query3 = "UPDATE customer SET email = '%s' WHERE id = %s" % (newEmail, customerID)
-    execute_query(conn, query3)
+   
+    if not custid: #check if valid id
+        return jsonify({"error": "Invalid email"})
+    else:
+        query3 = "UPDATE Customer SET email = '%s' WHERE customer_id = %s" % (newEmail, custid)
+        execute_query(conn, query3)
+    
+    return "delete request successful"
+    
+    
     
     return jsonify({"message": "customer email updated successfully"})
 
-@app.route('/api/Customer/delete', methods=['DELETE']) #delete a book by id DELETE
+@app.route('/api/Customer/delete', methods=['DELETE'])
 def customer_delete():
     request_data = request.get_json()
-    delete_id = request_data.get['id']
-    query7 = "SELECT id FROM Customer WHERE id = %s" % (delete_id) 
-    customer = execute_read_query(conn,query7)
-    if not customer: #check if valid id
+    delete_id = request_data['customer_id']
+
+    if not delete_id:  # check if valid id
         return jsonify({"error": "Invalid ID"})
     else:
-        delete_query = f"DELETE FROM Customer WHERE id = {delete_id}"
+        # Delete related rows in the Order table
+        delete_orders_query = f"DELETE FROM `Order` WHERE customer_id = {delete_id}"
+        execute_query(conn, delete_orders_query)
+
+        # Delete the customer
+        delete_query = f"DELETE FROM Customer WHERE customer_id = {delete_id}"
         execute_query(conn, delete_query)
-    
-    return "delete request successful"
+
+    return jsonify({"message": "Customer and related orders deleted successfully"})
 
 
 
