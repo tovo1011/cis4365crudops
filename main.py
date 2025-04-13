@@ -44,14 +44,9 @@ def updateCustomer():
         return jsonify({"error": "Invalid email"})
     else:
         query3 = "UPDATE Customer SET email = '%s' WHERE customer_id = %s" % (newEmail, custid)
-        execute_query(conn, query3)
-    
-    return "delete request successful"
-    
-    
+        execute_query(conn, query3)    
     
     return jsonify({"message": "customer email updated successfully"})
-
 @app.route('/api/Customer/delete', methods=['DELETE'])
 def customer_delete():
     request_data = request.get_json()
@@ -60,16 +55,52 @@ def customer_delete():
     if not delete_id:  # check if valid id
         return jsonify({"error": "Invalid ID"})
     else:
-        # Delete related rows in the Order table
-        delete_orders_query = f"DELETE FROM `Order` WHERE customer_id = {delete_id}"
-        execute_query(conn, delete_orders_query)
-
         # Delete the customer
-        delete_query = f"DELETE FROM Customer WHERE customer_id = {delete_id}"
+        delete_query = f" ON CASCADE DELETE FROM Customer WHERE customer_id = {delete_id}"
         execute_query(conn, delete_query)
+        return jsonify({"message": "Customer deleted successfully"})
 
-    return jsonify({"message": "Customer and related orders deleted successfully"})
 
+@app.route("/api/Employee", methods = ["GET"])
+def getAllemployees():
+    query = "SELECT * FROM Employee"
+    result = execute_read_query(conn, query)
+    return jsonify(result)
+
+
+@app.route("/api/Employee/add", methods = ["POST"])
+def addOneEmployee():
+    requestdata = request.get_json()
+    name = requestdata["name"]
+    email = requestdata["email"]
+    
+    
+    query2 = "INSERT INTO Employee (name, email) VALUES ('%s', '%s')" % (name, email)
+    execute_query(conn, query2)
+    return jsonify({"message": "added a employee!"}), 201
+
+@app.route("/api/Employee/updateEmail", methods = ["PUT"])
+def updateEmployee():
+    requestdata = request.get_json()
+    empid = requestdata["employee_id"]
+
+    newEmail = requestdata["email"]
+    
+   
+    if not empid: #check if valid id
+        return jsonify({"error": "Invalid email"})
+    else:
+        query3 = "UPDATE Employee SET email = '%s' WHERE employee_id = %s" % (newEmail, empid)
+        execute_query(conn, query3)
+    return jsonify({"message": "employee email updated successfully"})
+#no delete for employee yet
+
+
+
+
+
+
+    
 
 
 
